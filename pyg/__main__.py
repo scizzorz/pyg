@@ -2,9 +2,16 @@ from . import Program
 
 
 class Foo(Program):
-    goto(0, 0)
-    move(10, 20)
-    move(20, 30)
+    x = 10
+    x = 30
+    x += 20
+    y = 20
+    y += 10
+    x, y = 10, 30
+    x += 10
+    x += 10
+    x += 10
+    x += 10
 
 
 for command in Foo.commands:
