@@ -1,125 +1,108 @@
 __version__ = "0.1.0"
 
+from enum import Enum
+
 
 class Axis:
-  def __init__(self, ns, axis):
-    self.val = 0
+  def __init__(self, program, axis):
     self.axis = axis
-    self.ns = ns
+    self.program = program
 
-  def __add__(self, val):
-    self.ns.c_relative()
-    getattr(self.ns, f"c_{self.axis}")(val, False)
+  def push(self, val):
+    self.program.push(f"{self.axis}{val}")
 
   def __iadd__(self, val):
-    self.ns.c_relative()
-    getattr(self.ns, f"c_{self.axis}")(val, False)
+    self.program.relative = True
+    self.push(val)
 
   def __isub__(self, val):
-    self.ns.c_relative()
-    getattr(self.ns, f"c_{self.axis}")(-val, False)
+    self.program.relative = True
+    self.push(-val)
 
 
-class Namespace(dict):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.commands = []
-        self.relative = False
-        self.x = Axis(self, "x")
-        self.y = Axis(self, "y")
-        self.z = Axis(self, "z")
-        super().__setitem__("commands", self.commands)
-        super().__setitem__("x", self.x)
-        super().__setitem__("y", self.y)
-        super().__setitem__("z", self.z)
+class Movement(Enum):
+  absolute = 90  # G90
+  relative = 91  # G91
 
-    def append(self, cmd):
-        self.commands.append(cmd)
-
-    def c_x(self, to=None, abs=True):
-        if to is None:
-            return self.x
-
-        if abs:
-            self.c_absolute()
-
-        self.append(f"X{to}")
-
-    def c_y(self, to=None, abs=True):
-        if to is None:
-            return self.y
-
-        if abs:
-            self.c_absolute()
-
-        self.append(f"Y{to}")
-
-    def c_z(self, to=None, abs=True):
-        if to is None:
-            return self.z
-
-        if abs:
-            self.c_absolute()
-
-        self.append(f"Z{to}")
-
-    def c_relative(self, to=None):
-        if not self.relative:
-            self.append(f"relative = True")
-            self.relative = True
-
-    def c_absolute(self, to=None):
-        if self.relative:
-            self.append(f"relative = False")
-            self.relative = False
-
-    def c_goto(self):
-        def fn(x=None, y=None, z=None):
-            self.c_absolute()
-            if x is not None:
-                self.c_x(x)
-
-            if y is not None:
-                self.c_y(y)
-
-            if z is not None:
-                self.c_z(z)
-
-        return fn
-
-    def c_move(self):
-        def fn(x=None, y=None, z=None):
-            self.c_relative()
-            if x is not None:
-                self["x"] = x
-
-            if y is not None:
-                self["y"] = y
-
-            if z is not None:
-                self["z"] = z
-
-        return fn
-
-    def __getitem__(self, key):
-        fn = getattr(self, f"c_{key}", None)
-        if fn is not None:
-            return fn()
-
-        return super().__getitem__(key)
-
-    def __setitem__(self, key, val):
-        fn = getattr(self, f"c_{key}", None)
-        if fn is not None:
-            return fn(val)
-
-        return super().__setitem__(key, val)
+  @property
+  def cmd(self):
+    return f"G{self.value} ; movement = {self.name}"
 
 
-class ProgramMeta(type):
-    def __prepare__(name, bases):
-        return Namespace()
+class Measurement(Enum):
+  imperial = 20  # G20
+  metric = 21  # G21
+
+  @property
+  def cmd(self):
+    return f"G{self.value} ; measurement = {self.name}"
 
 
-class Program(metaclass=ProgramMeta):
-    pass
+class Motion(Enum):
+  rapid = 0  # G0
+  linear = 1  # G1
+  arc_cw = 2  # G2
+  arc_ccw = 3  # G3
+
+  @property
+  def cmd(self):
+    return f"G{self.value} ; motion = {self.name}"
+
+
+class Plane(Enum):
+  xy = 17  # G17
+  xz = 18  # G18
+  yz = 19  # G19
+
+  @property
+  def cmd(self):
+    return f"G{self.value} ; plane = {self.name}"
+
+
+class Program:
+  def __init__(self):
+    self.commands = []
+    self.movement = Movement.absolute
+    self.measurement = Measurement.metric
+    self.motion = Motion.rapid
+    self.plane = Plane.xy
+    self.feed = None
+    self._x = Axis(self, "X")
+    self._y = Axis(self, "Y")
+    self._z = Axis(self, "Z")
+
+  def push(self, cmd):
+    self.commands.append(cmd)
+
+  def push_movement(self):
+    self.push(self.movement.cmd)
+
+  @property
+  def relative(self):
+    return self.movement == Movement.relative
+
+  @relative.setter
+  def relative(self, val):
+    if self.relative != val:
+      self.movement = Movement.relative if val else Movement.absolute
+      self.push_movement()
+
+  @property
+  def absolute(self):
+    return self.movement == Movement.absolute
+
+  @absolute.setter
+  def absolute(self, val):
+    if self.absolute != val:
+      self.movement = Movement.absolute if val else Movement.relative
+      self.push_movement()
+
+  @property
+  def x(self):
+    return self._x
+
+  @x.setter
+  def x(self, val):
+    if val is not None:
+      self.absolute = True
+      self._x.push(val)

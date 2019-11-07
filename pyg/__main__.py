@@ -1,18 +1,14 @@
 from . import Program
 
+p = Program()
+p.relative = True
+p.x = 0
+p.x = 10
 
-class Foo(Program):
-    x = 10
-    x = 30
-    x += 20
-    y = 20
-    y += 10
-    x, y = 10, 30
-    x += 10
-    x += 10
-    x += 10
-    x += 10
+p.x += 10
+p.x = 10
 
 
-for command in Foo.commands:
+
+for command in p.commands:
     print(command)
