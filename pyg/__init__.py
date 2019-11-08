@@ -4,255 +4,269 @@ from enum import Enum
 
 
 class Axis:
-  def __init__(self, program, axis):
-    self.axis = axis
-    self.program = program
+    def __init__(self, program, axis):
+        self.axis = axis
+        self.program = program
 
-  def push(self, val):
-    self.program.push(f"{self.axis}{val}")
+    def push(self, val):
+        self.program.push(f"{self.axis}{val:.3f}")
 
-  def __iadd__(self, val):
-    if val is not None:
-      self.program.relative
-      self.push(val)
+    def __iadd__(self, val):
+        if val is not None:
+            self.program.relative
+            self.push(val)
 
-  def __isub__(self, val):
-    if val is not None:
-      self.program.relative
-      self.push(-val)
+    def __isub__(self, val):
+        if val is not None:
+            self.program.relative
+            self.push(-val)
 
 
 class Movement(Enum):
-  absolute = 90  # G90
-  relative = 91  # G91
+    absolute = 90  # G90
+    relative = 91  # G91
 
-  @property
-  def cmd(self):
-    return f"G{self.value}"
-    return f"G{self.value} ; movement = {self.name}"
+    @property
+    def cmd(self):
+        return f"G{self.value}"
+        return f"G{self.value} ; movement = {self.name}"
 
 
 class Measurement(Enum):
-  imperial = 20  # G20
-  metric = 21  # G21
+    imperial = 20  # G20
+    metric = 21  # G21
 
-  @property
-  def cmd(self):
-    return f"G{self.value}"
-    return f"G{self.value} ; measurement = {self.name}"
+    @property
+    def cmd(self):
+        return f"G{self.value}"
+        return f"G{self.value} ; measurement = {self.name}"
 
 
 class Motion(Enum):
-  rapid = 0  # G0
-  linear = 1  # G1
-  arc_cw = 2  # G2
-  arc_ccw = 3  # G3
+    rapid = 0  # G0
+    linear = 1  # G1
+    arc_cw = 2  # G2
+    arc_ccw = 3  # G3
 
-  @property
-  def cmd(self):
-    return f"G{self.value}"
-    return f"G{self.value} ; motion = {self.name}"
+    @property
+    def cmd(self):
+        return f"G{self.value}"
+        return f"G{self.value} ; motion = {self.name}"
 
 
 class Plane(Enum):
-  xy = 17  # G17
-  xz = 18  # G18
-  yz = 19  # G19
+    xy = 17  # G17
+    xz = 18  # G18
+    yz = 19  # G19
 
-  @property
-  def cmd(self):
-    return f"G{self.value}"
-    return f"G{self.value} ; plane = {self.name}"
+    @property
+    def cmd(self):
+        return f"G{self.value}"
+        return f"G{self.value} ; plane = {self.name}"
 
 
 class Program:
-  def __init__(self):
-    self.buffer = []
-    self.commands = []
+    def __init__(self):
+        self.buffer = []
+        self.commands = []
 
-    self._movement = None
-    self._measurement = None
-    self._motion = None
-    self._plane = None
+        self._movement = None
+        self._measurement = None
+        self._motion = None
+        self._plane = None
 
-    # feed rate
-    self._feed = None
+        # feed rate
+        self._feed = None
 
-    # tool coordinates
-    self._x = Axis(self, "X")
-    self._y = Axis(self, "Y")
-    self._z = Axis(self, "Z")
+        # tool coordinates
+        self._x = Axis(self, "X")
+        self._y = Axis(self, "Y")
+        self._z = Axis(self, "Z")
 
-    # initializes everything
-    with self:
-      self.movement = Movement.absolute
-      self.measurement = Measurement.metric
-      self.motion = Motion.rapid
-      self.plane = Plane.xy
+        # initializes everything
+        with self:
+            self.movement = Movement.absolute
+            self.measurement = Measurement.metric
+            self.motion = Motion.rapid
+            self.plane = Plane.xy
 
-  def push(self, cmd):
-    self.buffer.append(cmd)
+    def push(self, cmd):
+        self.buffer.append(cmd)
 
-  def squash(self):
-    self.commands.append(" ".join(self.buffer))
-    self.buffer = []
+    def squash(self):
+        if len(self.buffer) == 0:
+            return
 
-  def drop(self):
-    self.buffer = []
+        self.commands.append(" ".join(self.buffer))
+        self.buffer = []
 
-  def push_motion(self):
-    self.push(self.motion.cmd)
+    def drop(self):
+        self.buffer = []
 
-  def push_measurement(self):
-    self.push(self.measurement.cmd)
+    def push_motion(self):
+        self.push(self.motion.cmd)
 
-  def push_movement(self):
-    self.push(self.movement.cmd)
+    def push_measurement(self):
+        self.push(self.measurement.cmd)
 
-  def push_plane(self):
-    self.push(self.plane.cmd)
+    def push_movement(self):
+        self.push(self.movement.cmd)
 
-  def push_feed(self):
-    self.push(f"F{self._feed}")
+    def push_plane(self):
+        self.push(self.plane.cmd)
 
-  @property
-  def movement(self):
-    return self._movement
+    def push_feed(self):
+        self.push(f"F{self._feed}")
 
-  @movement.setter
-  def movement(self, val):
-    if val != self._movement:
-      self._movement = val
-      self.push_movement()
+    @property
+    def movement(self):
+        return self._movement
 
-  @property
-  def motion(self):
-    return self._motion
+    @movement.setter
+    def movement(self, val):
+        if val != self._movement:
+            self._movement = val
+            self.push_movement()
 
-  @motion.setter
-  def motion(self, val):
-    if val != self._motion:
-      self._motion = val
-      self.push_motion()
+    @property
+    def motion(self):
+        return self._motion
 
-  @property
-  def plane(self):
-    return self._plane
+    @motion.setter
+    def motion(self, val):
+        if val != self._motion:
+            self._motion = val
+            self.push_motion()
 
-  @plane.setter
-  def plane(self, val):
-    if val != self._plane:
-      self._plane = val
-      self.push_plane()
+    @property
+    def plane(self):
+        return self._plane
 
-  @property
-  def measurement(self):
-    return self._measurement
+    @plane.setter
+    def plane(self, val):
+        if val != self._plane:
+            self._plane = val
+            self.push_plane()
 
-  @measurement.setter
-  def measurement(self, val):
-    if val != self._measurement:
-      self._measurement = val
-      self.push_measurement()
+    @property
+    def measurement(self):
+        return self._measurement
 
-  @property
-  def feed(self):
-    return self._feed
+    @measurement.setter
+    def measurement(self, val):
+        if val != self._measurement:
+            self._measurement = val
+            self.push_measurement()
 
-  @feed.setter
-  def feed(self, val):
-    if self._feed != val:
-      self._feed = val
-      self.push_feed()
+    @property
+    def feed(self):
+        return self._feed
 
-  @property
-  def x(self):
-    return self._x
+    @feed.setter
+    def feed(self, val):
+        if self._feed != val:
+            self._feed = val
+            self.push_feed()
 
-  @x.setter
-  def x(self, val):
-    if val is not None:
-      self.absolute
-      self._x.push(val)
+    @property
+    def x(self):
+        return self._x
 
-  @property
-  def y(self):
-    return self._y
+    @x.setter
+    def x(self, val):
+        if val is not None:
+            self.absolute
+            self._x.push(val)
 
-  @y.setter
-  def y(self, val):
-    if val is not None:
-      self.absolute
-      self._y.push(val)
+    @property
+    def y(self):
+        return self._y
 
-  @property
-  def z(self):
-    return self._z
+    @y.setter
+    def y(self, val):
+        if val is not None:
+            self.absolute
+            self._y.push(val)
 
-  @z.setter
-  def z(self, val):
-    if val is not None:
-      self.absolute
-      self._z.push(val)
+    @property
+    def z(self):
+        return self._z
 
-  @property
-  def relative(self):
-    self.movement = Movement.relative
+    @z.setter
+    def z(self, val):
+        if val is not None:
+            self.absolute
+            self._z.push(val)
 
-  @property
-  def absolute(self):
-    self.movement = Movement.absolute
+    @property
+    def relative(self):
+        self.movement = Movement.relative
 
-  @property
-  def metric(self):
-    self.measurement = Measurement.metric
+    @property
+    def absolute(self):
+        self.movement = Movement.absolute
 
-  @property
-  def imperial(self):
-    self.measurement = Measurement.imperial
+    @property
+    def metric(self):
+        self.measurement = Measurement.metric
 
-  @property
-  def rapid(self):
-    self.motion = Motion.rapid
+    @property
+    def imperial(self):
+        self.measurement = Measurement.imperial
 
-  @property
-  def linear(self):
-    self.motion = Motion.linear
+    @property
+    def rapid(self):
+        self.motion = Motion.rapid
 
-  @property
-  def arc_cw(self):
-    self.motion = Motion.arc_cw
+    @property
+    def linear(self):
+        self.motion = Motion.linear
 
-  @property
-  def arc_ccw(self):
-    self.motion = Motion.arc_cw
+    @property
+    def xy(self):
+        self.plane = Plane.xy
 
-  @property
-  def xy(self):
-    self.plane = Plane.xy
+    @property
+    def xz(self):
+        self.plane = Plane.xz
 
-  @property
-  def xz(self):
-    self.plane = Plane.xz
+    @property
+    def yz(self):
+        self.plane = Plane.yz
 
-  @property
-  def yz(self):
-    self.plane = Plane.yz
+    def move(self, x=None, y=None, z=None):
+        with self:
+            self.x += x
+            self.y += y
+            self.z += z
 
-  def move(self, x=None, y=None, z=None):
-    with self:
-      self.x += x
-      self.y += y
-      self.z += z
+    def goto(self, x=None, y=None, z=None):
+        with self:
+            self.x = x
+            self.y = y
+            self.z = z
 
-  def goto(self, x=None, y=None, z=None):
-    with self:
-      self.x = x
-      self.y = y
-      self.z = z
+    def arc(self, motion, x=None, y=None, z=None, i=None, j=None, k=None):
+        with self:
+            self.motion = Motion.arc_cw
+            self.x = x
+            self.y = y
+            self.z = z
+            if i is not None:
+                self.push(f"I{i:.3f}")
+            if j is not None:
+                self.push(f"J{j:.3f}")
+            if k is not None:
+                self.push(f"K{k:.3f}")
 
-  def __enter__(self):
-    pass
+    def arc_cw(self, **kwargs):
+        self.arc(Motion.arc_cw, **kwargs)
 
-  def __exit__(self, type, value, traceback):
-    self.squash()
+    def arc_ccw(self, **kwargs):
+        self.arc(Motion.arc_ccw, **kwargs)
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, type, value, traceback):
+        self.squash()
