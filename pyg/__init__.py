@@ -28,6 +28,7 @@ class Movement(Enum):
 
   @property
   def cmd(self):
+    return f"G{self.value}"
     return f"G{self.value} ; movement = {self.name}"
 
 
@@ -37,6 +38,7 @@ class Measurement(Enum):
 
   @property
   def cmd(self):
+    return f"G{self.value}"
     return f"G{self.value} ; measurement = {self.name}"
 
 
@@ -48,6 +50,7 @@ class Motion(Enum):
 
   @property
   def cmd(self):
+    return f"G{self.value}"
     return f"G{self.value} ; motion = {self.name}"
 
 
@@ -58,11 +61,13 @@ class Plane(Enum):
 
   @property
   def cmd(self):
+    return f"G{self.value}"
     return f"G{self.value} ; plane = {self.name}"
 
 
 class Program:
   def __init__(self):
+    self.buffer = []
     self.commands = []
 
     self._movement = None
@@ -73,24 +78,27 @@ class Program:
     # feed rate
     self._feed = None
 
-    # arc center
-    self._i = Axis(self, "I")
-    self._j = Axis(self, "J")
-    self._k = Axis(self, "K")
-
     # tool coordinates
     self._x = Axis(self, "X")
     self._y = Axis(self, "Y")
     self._z = Axis(self, "Z")
 
     # initializes everything
-    self.movement = Movement.absolute
-    self.measurement = Measurement.metric
-    self.motion = Motion.rapid
-    self.plane = Plane.xy
+    with self:
+      self.movement = Movement.absolute
+      self.measurement = Measurement.metric
+      self.motion = Motion.rapid
+      self.plane = Plane.xy
 
   def push(self, cmd):
-    self.commands.append(cmd)
+    self.buffer.append(cmd)
+
+  def squash(self):
+    self.commands.append(" ".join(self.buffer))
+    self.buffer = []
+
+  def drop(self):
+    self.buffer = []
 
   def push_motion(self):
     self.push(self.motion.cmd)
@@ -188,36 +196,6 @@ class Program:
       self._z.push(val)
 
   @property
-  def i(self):
-    return self._i
-
-  @i.setter
-  def i(self, val):
-    if val is not None:
-      self.absolute
-      self._i.push(val)
-
-  @property
-  def j(self):
-    return self._j
-
-  @j.setter
-  def j(self, val):
-    if val is not None:
-      self.absolute
-      self._j.push(val)
-
-  @property
-  def k(self):
-    return self._k
-
-  @k.setter
-  def k(self, val):
-    if val is not None:
-      self.absolute
-      self._k.push(val)
-
-  @property
   def relative(self):
     self.movement = Movement.relative
 
@@ -262,11 +240,19 @@ class Program:
     self.plane = Plane.yz
 
   def move(self, x=None, y=None, z=None):
-    self.x += x
-    self.y += y
-    self.z += z
+    with self:
+      self.x += x
+      self.y += y
+      self.z += z
 
   def goto(self, x=None, y=None, z=None):
-    self.x = x
-    self.y = y
-    self.z = z
+    with self:
+      self.x = x
+      self.y = y
+      self.z = z
+
+  def __enter__(self):
+    pass
+
+  def __exit__(self, type, value, traceback):
+    self.squash()
