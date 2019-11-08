@@ -13,12 +13,12 @@ class Axis:
 
   def __iadd__(self, val):
     if val is not None:
-      self.program.relative = True
+      self.program.relative
       self.push(val)
 
   def __isub__(self, val):
     if val is not None:
-      self.program.relative = True
+      self.program.relative
       self.push(-val)
 
 
@@ -64,15 +64,26 @@ class Plane(Enum):
 class Program:
   def __init__(self):
     self.commands = []
+
     self._movement = None
     self._measurement = None
     self._motion = None
     self._plane = None
+
+    # feed rate
     self._feed = None
+
+    # arc center
+    self._i = Axis(self, "I")
+    self._j = Axis(self, "J")
+    self._k = Axis(self, "K")
+
+    # tool coordinates
     self._x = Axis(self, "X")
     self._y = Axis(self, "Y")
     self._z = Axis(self, "Z")
 
+    # initializes everything
     self.movement = Movement.absolute
     self.measurement = Measurement.metric
     self.motion = Motion.rapid
@@ -153,7 +164,7 @@ class Program:
   @x.setter
   def x(self, val):
     if val is not None:
-      self.absolute = True
+      self.absolute
       self._x.push(val)
 
   @property
@@ -163,7 +174,7 @@ class Program:
   @y.setter
   def y(self, val):
     if val is not None:
-      self.absolute = True
+      self.absolute
       self._y.push(val)
 
   @property
@@ -173,28 +184,46 @@ class Program:
   @z.setter
   def z(self, val):
     if val is not None:
-      self.absolute = True
+      self.absolute
       self._z.push(val)
 
   @property
-  def relative(self):
-    return self.movement == Movement.relative
+  def i(self):
+    return self._i
 
-  @relative.setter
-  def relative(self, val):
-    if self.relative != val:
-      self.movement = Movement.relative if val else Movement.absolute
-      self.push_movement()
+  @i.setter
+  def i(self, val):
+    if val is not None:
+      self.absolute
+      self._i.push(val)
+
+  @property
+  def j(self):
+    return self._j
+
+  @j.setter
+  def j(self, val):
+    if val is not None:
+      self.absolute
+      self._j.push(val)
+
+  @property
+  def k(self):
+    return self._k
+
+  @k.setter
+  def k(self, val):
+    if val is not None:
+      self.absolute
+      self._k.push(val)
+
+  @property
+  def relative(self):
+    self.movement = Movement.relative
 
   @property
   def absolute(self):
-    return self.movement == Movement.absolute
-
-  @absolute.setter
-  def absolute(self, val):
-    if self.absolute != val:
-      self.movement = Movement.absolute if val else Movement.relative
-      self.push_movement()
+    self.movement = Movement.absolute
 
   @property
   def metric(self):
@@ -209,7 +238,7 @@ class Program:
     self.motion = Motion.rapid
 
   @property
-  def cut(self):
+  def linear(self):
     self.motion = Motion.linear
 
   @property
@@ -219,6 +248,18 @@ class Program:
   @property
   def arc_ccw(self):
     self.motion = Motion.arc_cw
+
+  @property
+  def xy(self):
+    self.plane = Plane.xy
+
+  @property
+  def xz(self):
+    self.plane = Plane.xz
+
+  @property
+  def yz(self):
+    self.plane = Plane.yz
 
   def move(self, x=None, y=None, z=None):
     self.x += x
