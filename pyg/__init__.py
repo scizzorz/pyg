@@ -12,12 +12,14 @@ class Axis:
     self.program.push(f"{self.axis}{val}")
 
   def __iadd__(self, val):
-    self.program.relative = True
-    self.push(val)
+    if val is not None:
+      self.program.relative = True
+      self.push(val)
 
   def __isub__(self, val):
-    self.program.relative = True
-    self.push(-val)
+    if val is not None:
+      self.program.relative = True
+      self.push(-val)
 
 
 class Movement(Enum):
@@ -62,20 +64,117 @@ class Plane(Enum):
 class Program:
   def __init__(self):
     self.commands = []
-    self.movement = Movement.absolute
-    self.measurement = Measurement.metric
-    self.motion = Motion.rapid
-    self.plane = Plane.xy
-    self.feed = None
+    self._movement = None
+    self._measurement = None
+    self._motion = None
+    self._plane = None
+    self._feed = None
     self._x = Axis(self, "X")
     self._y = Axis(self, "Y")
     self._z = Axis(self, "Z")
 
+    self.movement = Movement.absolute
+    self.measurement = Measurement.metric
+    self.motion = Motion.rapid
+    self.plane = Plane.xy
+
   def push(self, cmd):
     self.commands.append(cmd)
 
+  def push_motion(self):
+    self.push(self.motion.cmd)
+
+  def push_measurement(self):
+    self.push(self.measurement.cmd)
+
   def push_movement(self):
     self.push(self.movement.cmd)
+
+  def push_plane(self):
+    self.push(self.plane.cmd)
+
+  def push_feed(self):
+    self.push(f"F{self._feed}")
+
+  @property
+  def movement(self):
+    return self._movement
+
+  @movement.setter
+  def movement(self, val):
+    if val != self._movement:
+      self._movement = val
+      self.push_movement()
+
+  @property
+  def motion(self):
+    return self._motion
+
+  @motion.setter
+  def motion(self, val):
+    if val != self._motion:
+      self._motion = val
+      self.push_motion()
+
+  @property
+  def plane(self):
+    return self._plane
+
+  @plane.setter
+  def plane(self, val):
+    if val != self._plane:
+      self._plane = val
+      self.push_plane()
+
+  @property
+  def measurement(self):
+    return self._measurement
+
+  @measurement.setter
+  def measurement(self, val):
+    if val != self._measurement:
+      self._measurement = val
+      self.push_measurement()
+
+  @property
+  def feed(self):
+    return self._feed
+
+  @feed.setter
+  def feed(self, val):
+    if self._feed != val:
+      self._feed = val
+      self.push_feed()
+
+  @property
+  def x(self):
+    return self._x
+
+  @x.setter
+  def x(self, val):
+    if val is not None:
+      self.absolute = True
+      self._x.push(val)
+
+  @property
+  def y(self):
+    return self._y
+
+  @y.setter
+  def y(self, val):
+    if val is not None:
+      self.absolute = True
+      self._y.push(val)
+
+  @property
+  def z(self):
+    return self._z
+
+  @z.setter
+  def z(self, val):
+    if val is not None:
+      self.absolute = True
+      self._z.push(val)
 
   @property
   def relative(self):
@@ -98,11 +197,35 @@ class Program:
       self.push_movement()
 
   @property
-  def x(self):
-    return self._x
+  def metric(self):
+    self.measurement = Measurement.metric
 
-  @x.setter
-  def x(self, val):
-    if val is not None:
-      self.absolute = True
-      self._x.push(val)
+  @property
+  def imperial(self):
+    self.measurement = Measurement.imperial
+
+  @property
+  def rapid(self):
+    self.motion = Motion.rapid
+
+  @property
+  def cut(self):
+    self.motion = Motion.linear
+
+  @property
+  def arc_cw(self):
+    self.motion = Motion.arc_cw
+
+  @property
+  def arc_ccw(self):
+    self.motion = Motion.arc_cw
+
+  def move(self, x=None, y=None, z=None):
+    self.x += x
+    self.y += y
+    self.z += z
+
+  def goto(self, x=None, y=None, z=None):
+    self.x = x
+    self.y = y
+    self.z = z
