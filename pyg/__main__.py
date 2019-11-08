@@ -63,6 +63,7 @@ sf = 1.0
 side = 148.49 * sf
 big_diam = 28 * sf
 small_diam = 8 * sf
+small_inset = 34 * sf
 safe = 0.5
 
 height = side * sqrt(3) / 2
@@ -92,38 +93,84 @@ rb_tan = right_center + tan_offset.over_x
 bl_tan = bottom_center + left_offset
 br_tan = bottom_center + tan_offset.over_x
 
+sm_top_inset = Polar(th=150, r=small_inset)
+sm_bottom_inset = sm_top_inset.over_x
+sm_right_inset = Polar(th=270, r=small_inset)
+
+sm_top_center = top + sm_top_inset
+sm_bottom_center = bottom + sm_bottom_inset
+sm_right_center = right + sm_right_inset
+
 p = Program()
 with p:
     p.feed = 1500
-p.goto(x=tl_tan.x, y=tl_tan.y)
+
+with p:
+    p.rapid
+    p.goto(x=tl_tan.x, y=tl_tan.y)
 
 with p:
     p.z -= safe
 
 p.arc_cw(x=tr_tan.x, y=tr_tan.y, i=top_center.x - tl_tan.x, j=top_center.y - tl_tan.y)
 
-p.linear
-p.goto(x=rt_tan.x, y=rt_tan.y)
+with p:
+    p.linear
+    p.goto(x=rt_tan.x, y=rt_tan.y)
+
 p.arc_cw(
     x=rb_tan.x, y=rb_tan.y, i=right_center.x - rt_tan.x, j=right_center.y - rt_tan.y
 )
 
-p.linear
-p.goto(x=br_tan.x, y=br_tan.y)
+with p:
+    p.linear
+    p.goto(x=br_tan.x, y=br_tan.y)
+
 p.arc_cw(
     x=bl_tan.x, y=bl_tan.y, i=bottom_center.x - br_tan.x, j=bottom_center.y - br_tan.y
 )
 
-p.linear
-p.goto(x=tl_tan.x, y=tl_tan.y)
+with p:
+    p.linear
+    p.goto(x=tl_tan.x, y=tl_tan.y)
 
 with p:
     p.z += safe
 
 with p:
     p.rapid
-    p.goto(0, 0, 0)
+    p.goto(x=sm_top_center.x, y=sm_top_center.y)
 
+with p:
+    p.z -= safe
+
+with p:
+    p.linear
+    p.goto(x=0, y=0)
+
+with p:
+    p.goto(x=sm_right_center.x, y=sm_right_center.y)
+
+with p:
+    p.z += safe
+
+with p:
+    p.rapid
+    p.goto(x=0, y=0)
+
+with p:
+    p.z -= safe
+
+with p:
+    p.linear
+    p.goto(x=sm_bottom_center.x, y=sm_bottom_center.y)
+
+with p:
+    p.z += safe
+
+with p:
+    p.rapid
+    p.goto(x=0, y=0)
 
 for command in p.commands:
     print(command)

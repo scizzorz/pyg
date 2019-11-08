@@ -67,6 +67,7 @@ class Plane(Enum):
 
 class Program:
     def __init__(self):
+        self.bufstack = []
         self.buffer = []
         self.commands = []
 
@@ -200,11 +201,13 @@ class Program:
 
     @property
     def relative(self):
-        self.movement = Movement.relative
+        with self:
+            self.movement = Movement.relative
 
     @property
     def absolute(self):
-        self.movement = Movement.absolute
+        with self:
+            self.movement = Movement.absolute
 
     @property
     def metric(self):
@@ -235,20 +238,18 @@ class Program:
         self.plane = Plane.yz
 
     def move(self, x=None, y=None, z=None):
-        with self:
-            self.x += x
-            self.y += y
-            self.z += z
+        self.x += x
+        self.y += y
+        self.z += z
 
     def goto(self, x=None, y=None, z=None):
-        with self:
-            self.x = x
-            self.y = y
-            self.z = z
+        self.x = x
+        self.y = y
+        self.z = z
 
     def arc(self, motion, x=None, y=None, z=None, i=None, j=None, k=None):
         with self:
-            self.motion = Motion.arc_cw
+            self.motion = motion
             self.x = x
             self.y = y
             self.z = z
@@ -266,7 +267,9 @@ class Program:
         self.arc(Motion.arc_ccw, **kwargs)
 
     def __enter__(self):
-        pass
+        self.bufstack.append(self.buffer)
+        self.buffer = []
 
     def __exit__(self, type, value, traceback):
         self.squash()
+        self.buffer = self.bufstack.pop()
