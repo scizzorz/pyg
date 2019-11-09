@@ -106,23 +106,20 @@ sm_right_center = right + sm_right_inset
 class P(Program):
     cut: float = 1500
     plunge: float = 100
-    safety: float = 1
+    safety: float = 10
 
     def safe(self):
+        self.feed = self.plunge
         with self.linear:
-            self.feed = self.plunge
             self.z = self.safety
 
     def depth(self, to):
+        self.feed = self.plunge
         with self.linear:
-            self.feed = self.plunge
             self.z = to
 
-    def outline(self, depth):
-        self.depth(depth)
-
-        with self:
-            self.feed = self.cut
+    def outline(self):
+        self.feed = self.cut
 
         self.arc_cw(
             x=tr_tan.x, y=tr_tan.y, i=top_center.x - tl_tan.x, j=top_center.y - tl_tan.y
@@ -151,40 +148,36 @@ class P(Program):
         with self.linear:
             self.goto(x=tl_tan.x, y=tl_tan.y)
 
-        self.safe()
-
-    def inner(self, depth):
+    def inner(self):
         # cut top line
-        self.depth(depth)
+        self.feed = self.cut
         with self.linear:
-            self.feed = self.cut
             self.goto(x=sm_top_center.x, y=sm_top_center.y)
 
         # center
-        self.safe()
-        with self.rapid:
+        self.feed = self.cut * 3
+        with self.linear:
             self.move(x=-sm_top_center.x, y=-sm_top_center.y)
 
         # cut right line
-        self.depth(depth)
+        self.feed = self.cut
         with self.linear:
-            self.feed = self.cut
             self.goto(x=sm_right_center.x, y=sm_right_center.y)
 
         # center
-        self.safe()
-        with self.rapid:
+        self.feed = self.cut * 3
+        with self.linear:
             self.move(x=-sm_right_center.x, y=-sm_right_center.y)
 
         # cut bottom line
-        self.depth(depth)
+        self.feed = self.cut
         with self.linear:
             self.feed = self.cut
             self.goto(x=sm_bottom_center.x, y=sm_bottom_center.y)
 
         # center
-        self.safe()
-        with self.rapid:
+        self.feed = self.cut * 3
+        with self.linear:
             self.move(x=-sm_bottom_center.x, y=-sm_bottom_center.y)
 
     def go(self):
@@ -192,15 +185,25 @@ class P(Program):
         with self.rapid:
             self.goto(x=0, y=0, z=self.safety)
 
-        # engage inner
-        self.inner(-0.5)
+        # cut out inner
+        for x in range(0, 21):
+          self.depth(-x)
+          self.inner()
+        self.safe()
 
         # home to outline start
         with self.rapid:
-            self.goto(x=tl_tan.x, y=tl_tan.y, z=self.safety)
+            self.goto(x=tl_tan.x, y=tl_tan.y)
 
         # engage outline
-        self.outline(-0.5)
+        for x in range(0, 21):
+          self.depth(-x)
+          self.outline()
+        self.safe()
+
+        # home to center
+        with self.rapid:
+          self.goto(x=0, y=0)
 
 
 p = P()
