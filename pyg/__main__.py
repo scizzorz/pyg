@@ -60,6 +60,7 @@ class Polar:
 
 sf = 0.8
 
+tool_diam = 6.35
 side = 148.49 * sf
 big_diam = 28 * sf
 small_diam = 8 * sf
@@ -81,8 +82,8 @@ top_center = top + top_inset
 bottom_center = bottom + bottom_inset
 right_center = right + right_inset
 
-tan_offset = Polar(th=30, r=big_diam / 2)
-left_offset = Polar(270, r=big_diam / 2)
+tan_offset = Polar(th=30, r=big_diam / 2 + tool_diam / 2)
+left_offset = Polar(270, r=big_diam / 2 + tool_diam / 2)
 
 tl_tan = top_center + left_offset
 tr_tan = top_center + tan_offset
