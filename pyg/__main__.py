@@ -58,7 +58,7 @@ class Polar:
         return Point(x=x, y=y)
 
 
-sf = 1.0
+sf = 0.8
 
 side = 148.49 * sf
 big_diam = 28 * sf
@@ -101,76 +101,108 @@ sm_top_center = top + sm_top_inset
 sm_bottom_center = bottom + sm_bottom_inset
 sm_right_center = right + sm_right_inset
 
-p = Program()
-with p:
-    p.feed = 1500
 
-with p:
-    p.rapid
-    p.goto(x=tl_tan.x, y=tl_tan.y)
+class P(Program):
+    cut: float = 1500
+    plunge: float = 100
+    safety: float = 1
 
-with p:
-    p.z -= safe
+    def safe(self):
+        with self.linear:
+            self.feed = self.plunge
+            self.z = self.safety
 
-p.arc_cw(x=tr_tan.x, y=tr_tan.y, i=top_center.x - tl_tan.x, j=top_center.y - tl_tan.y)
+    def depth(self, to):
+        with self.linear:
+            self.feed = self.plunge
+            self.z = to
 
-with p:
-    p.linear
-    p.goto(x=rt_tan.x, y=rt_tan.y)
+    def outline(self, depth):
+        self.depth(depth)
 
-p.arc_cw(
-    x=rb_tan.x, y=rb_tan.y, i=right_center.x - rt_tan.x, j=right_center.y - rt_tan.y
-)
+        with self:
+            self.feed = self.cut
 
-with p:
-    p.linear
-    p.goto(x=br_tan.x, y=br_tan.y)
+        self.arc_cw(
+            x=tr_tan.x, y=tr_tan.y, i=top_center.x - tl_tan.x, j=top_center.y - tl_tan.y
+        )
 
-p.arc_cw(
-    x=bl_tan.x, y=bl_tan.y, i=bottom_center.x - br_tan.x, j=bottom_center.y - br_tan.y
-)
+        with self.linear:
+            self.goto(x=rt_tan.x, y=rt_tan.y)
 
-with p:
-    p.linear
-    p.goto(x=tl_tan.x, y=tl_tan.y)
+        self.arc_cw(
+            x=rb_tan.x,
+            y=rb_tan.y,
+            i=right_center.x - rt_tan.x,
+            j=right_center.y - rt_tan.y,
+        )
 
-with p:
-    p.z += safe
+        with self.linear:
+            self.goto(x=br_tan.x, y=br_tan.y)
 
-with p:
-    p.rapid
-    p.goto(x=sm_top_center.x, y=sm_top_center.y)
+        self.arc_cw(
+            x=bl_tan.x,
+            y=bl_tan.y,
+            i=bottom_center.x - br_tan.x,
+            j=bottom_center.y - br_tan.y,
+        )
 
-with p:
-    p.z -= safe
+        with self.linear:
+            self.goto(x=tl_tan.x, y=tl_tan.y)
 
-with p:
-    p.linear
-    p.goto(x=0, y=0)
+        self.safe()
 
-with p:
-    p.goto(x=sm_right_center.x, y=sm_right_center.y)
+    def inner(self, depth):
+        # cut top line
+        self.depth(depth)
+        with self.linear:
+            self.feed = self.cut
+            self.goto(x=sm_top_center.x, y=sm_top_center.y)
 
-with p:
-    p.z += safe
+        # center
+        self.safe()
+        with self.rapid:
+            self.move(x=-sm_top_center.x, y=-sm_top_center.y)
 
-with p:
-    p.rapid
-    p.goto(x=0, y=0)
+        # cut right line
+        self.depth(depth)
+        with self.linear:
+            self.feed = self.cut
+            self.goto(x=sm_right_center.x, y=sm_right_center.y)
 
-with p:
-    p.z -= safe
+        # center
+        self.safe()
+        with self.rapid:
+            self.move(x=-sm_right_center.x, y=-sm_right_center.y)
 
-with p:
-    p.linear
-    p.goto(x=sm_bottom_center.x, y=sm_bottom_center.y)
+        # cut bottom line
+        self.depth(depth)
+        with self.linear:
+            self.feed = self.cut
+            self.goto(x=sm_bottom_center.x, y=sm_bottom_center.y)
 
-with p:
-    p.z += safe
+        # center
+        self.safe()
+        with self.rapid:
+            self.move(x=-sm_bottom_center.x, y=-sm_bottom_center.y)
 
-with p:
-    p.rapid
-    p.goto(x=0, y=0)
+    def go(self):
+        # home to center
+        with self.rapid:
+            self.goto(x=0, y=0, z=self.safety)
 
+        # engage inner
+        self.inner(-0.5)
+
+        # home to outline start
+        with self.rapid:
+            self.goto(x=tl_tan.x, y=tl_tan.y, z=self.safety)
+
+        # engage outline
+        self.outline(-0.5)
+
+
+p = P()
+p.go()
 for command in p.commands:
     print(command)

@@ -1,5 +1,6 @@
 __version__ = "0.1.0"
 
+from contextlib import contextmanager
 from enum import Enum
 
 
@@ -85,10 +86,9 @@ class Program:
         self._z = Axis(self, "Z")
 
         # initializes everything
-        with self:
+        with self.rapid:
             self.movement = Movement.absolute
             self.measurement = Measurement.metric
-            self.motion = Motion.rapid
             self.plane = Plane.xy
 
     def push(self, cmd):
@@ -126,8 +126,9 @@ class Program:
     @movement.setter
     def movement(self, val):
         if val != self._movement:
-            self._movement = val
-            self.push_movement()
+            with self:
+                self._movement = val
+                self.push_movement()
 
     @property
     def motion(self):
@@ -166,8 +167,9 @@ class Program:
     @feed.setter
     def feed(self, val):
         if self._feed != val:
-            self._feed = val
-            self.push_feed()
+            with self:
+                self._feed = val
+                self.push_feed()
 
     @property
     def x(self):
@@ -201,13 +203,11 @@ class Program:
 
     @property
     def relative(self):
-        with self:
-            self.movement = Movement.relative
+        self.movement = Movement.relative
 
     @property
     def absolute(self):
-        with self:
-            self.movement = Movement.absolute
+        self.movement = Movement.absolute
 
     @property
     def metric(self):
@@ -218,12 +218,18 @@ class Program:
         self.measurement = Measurement.imperial
 
     @property
+    @contextmanager
     def rapid(self):
-        self.motion = Motion.rapid
+        with self:
+            self.motion = Motion.rapid
+            yield
 
     @property
+    @contextmanager
     def linear(self):
-        self.motion = Motion.linear
+        with self:
+            self.motion = Motion.linear
+            yield
 
     @property
     def xy(self):
