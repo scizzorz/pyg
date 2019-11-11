@@ -104,10 +104,10 @@ sm_right_center = right + sm_right_inset
 
 
 class P(Program):
-    cut: float = 1500
+    cut: float = 300
     plunge: float = 100
     safety: float = 10
-    depth_per_pass: float = 1.0
+    depth_per_pass: float = 0.5
     max_depth: float = 23.0
 
     def safe(self):
