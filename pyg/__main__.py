@@ -107,8 +107,8 @@ class P(Program):
     cut: float = 1500
     plunge: float = 100
     safety: float = 10
-    depth_per_pass: float = 1
-    max_depth: float = 23
+    depth_per_pass: float = 1.0
+    max_depth: float = 23.0
 
     def safe(self):
         self.feed = self.plunge
@@ -188,9 +188,11 @@ class P(Program):
             self.goto(x=0, y=0, z=self.safety)
 
         # cut out inner
-        for x in range(0, self.max_depth + 1, self.depth_per_pass):
+        x = 0
+        while x <= self.max_depth:
           self.depth(-x)
           self.inner()
+          x += self.depth_per_pass
         self.safe()
 
         # home to outline start
@@ -198,9 +200,11 @@ class P(Program):
             self.goto(x=tl_tan.x, y=tl_tan.y)
 
         # engage outline
-        for x in range(0, self.max_depth + 1, self.depth_per_pass):
+        x = 0
+        while x <= self.max_depth:
           self.depth(-x)
           self.outline()
+          x += self.depth_per_pass
         self.safe()
 
         # home to center
