@@ -74,9 +74,9 @@ top = offset + Point(x=0, y=side)
 bottom = offset + Point(x=0, y=0)
 right = offset + Point(x=height, y=side / 2)
 
-top_inset = Polar(th=150, r=big_diam)
+top_inset = Polar(th=150, r=big_diam - tool_diam / 2)
 bottom_inset = top_inset.over_x
-right_inset = Polar(th=270, r=big_diam)
+right_inset = Polar(th=270, r=big_diam - tool_diam / 2)
 
 top_center = top + top_inset
 bottom_center = bottom + bottom_inset
