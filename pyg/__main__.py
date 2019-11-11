@@ -74,9 +74,9 @@ top = offset + Point(x=0, y=side)
 bottom = offset + Point(x=0, y=0)
 right = offset + Point(x=height, y=side / 2)
 
-top_inset = Polar(th=150, r=big_diam - tool_diam / 2)
+top_inset = Polar(th=150, r=big_diam)
 bottom_inset = top_inset.over_x
-right_inset = Polar(th=270, r=big_diam - tool_diam / 2)
+right_inset = Polar(th=270, r=big_diam)
 
 top_center = top + top_inset
 bottom_center = bottom + bottom_inset
@@ -94,9 +94,9 @@ rb_tan = right_center + tan_offset.over_x
 bl_tan = bottom_center + left_offset
 br_tan = bottom_center + tan_offset.over_x
 
-sm_top_inset = Polar(th=150, r=small_inset)
+sm_top_inset = Polar(th=150, r=small_inset + tool_diam / 2)
 sm_bottom_inset = sm_top_inset.over_x
-sm_right_inset = Polar(th=270, r=small_inset)
+sm_right_inset = Polar(th=270, r=small_inset + tool_diam / 2)
 
 sm_top_center = top + sm_top_inset
 sm_bottom_center = bottom + sm_bottom_inset
