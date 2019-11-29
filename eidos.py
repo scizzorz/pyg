@@ -123,29 +123,23 @@ class P(Program):
     def outline(self):
         self.feed = self.cut
 
-        self.arc_cw(
-            x=tr_tan.x, y=tr_tan.y, i=top_center.x - tl_tan.x, j=top_center.y - tl_tan.y
-        )
+        with self.arc_cw(i=top_center.x - tl_tan.x, j=top_center.y - tl_tan.y):
+            self.x = tr_tan.x
+            self.y = tr_tan.y
 
         with self.linear:
             self.goto(x=rt_tan.x, y=rt_tan.y)
 
-        self.arc_cw(
-            x=rb_tan.x,
-            y=rb_tan.y,
-            i=right_center.x - rt_tan.x,
-            j=right_center.y - rt_tan.y,
-        )
+        with self.arc_cw(i=right_center.x - rt_tan.x, j=right_center.y - rt_tan.y):
+            self.x = rb_tan.x
+            self.y = rb_tan.y
 
         with self.linear:
             self.goto(x=br_tan.x, y=br_tan.y)
 
-        self.arc_cw(
-            x=bl_tan.x,
-            y=bl_tan.y,
-            i=bottom_center.x - br_tan.x,
-            j=bottom_center.y - br_tan.y,
-        )
+        with self.arc_cw(i=bottom_center.x - br_tan.x, j=bottom_center.y - br_tan.y):
+            self.x = bl_tan.x
+            self.y = bl_tan.y
 
         with self.linear:
             self.goto(x=tl_tan.x, y=tl_tan.y)
@@ -190,9 +184,9 @@ class P(Program):
         # cut out inner
         x = 0
         while x <= self.max_depth:
-          self.depth(-x)
-          self.inner()
-          x += self.depth_per_pass
+            self.depth(-x)
+            self.inner()
+            x += self.depth_per_pass
         self.safe()
 
         # home to outline start
@@ -202,14 +196,14 @@ class P(Program):
         # engage outline
         x = 0
         while x <= self.max_depth:
-          self.depth(-x)
-          self.outline()
-          x += self.depth_per_pass
+            self.depth(-x)
+            self.outline()
+            x += self.depth_per_pass
         self.safe()
 
         # home to center
         with self.rapid:
-          self.goto(x=0, y=0)
+            self.goto(x=0, y=0)
 
 
 p = P()

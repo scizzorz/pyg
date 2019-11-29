@@ -231,6 +231,32 @@ class Program:
             self.motion = Motion.linear
             yield
 
+    @contextmanager
+    def arc(self, motion, i=None, j=None, k=None):
+        with self:
+            self.motion = motion
+
+            yield
+
+            if i is not None:
+                self.push(f"I{i:.3f}")
+
+            if j is not None:
+                self.push(f"J{j:.3f}")
+
+            if k is not None:
+                self.push(f"K{k:.3f}")
+
+    @contextmanager
+    def arc_cw(self, i=None, j=None, k=None):
+        with self.arc(Motion.arc_cw, i, j, k):
+            yield
+
+    @contextmanager
+    def arc_ccw(self, i=None, j=None, k=None):
+        with self.arc(Motion.arc_ccw, i, j, k):
+            yield
+
     @property
     def xy(self):
         self.plane = Plane.xy
@@ -252,25 +278,6 @@ class Program:
         self.x = x
         self.y = y
         self.z = z
-
-    def arc(self, motion, x=None, y=None, z=None, i=None, j=None, k=None):
-        with self:
-            self.motion = motion
-            self.x = x
-            self.y = y
-            self.z = z
-            if i is not None:
-                self.push(f"I{i:.3f}")
-            if j is not None:
-                self.push(f"J{j:.3f}")
-            if k is not None:
-                self.push(f"K{k:.3f}")
-
-    def arc_cw(self, **kwargs):
-        self.arc(Motion.arc_cw, **kwargs)
-
-    def arc_ccw(self, **kwargs):
-        self.arc(Motion.arc_ccw, **kwargs)
 
     def __enter__(self):
         self.bufstack.append(self.buffer)
