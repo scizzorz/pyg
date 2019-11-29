@@ -271,29 +271,22 @@ class Program:
             yield
 
     @contextmanager
-    def arc(self, motion, i=None, j=None, k=None):
+    def arc(self, motion):
         with self:
             self.motion = motion
 
             yield
 
-            if i is not None:
-                self.push(f"I{i:.3f}")
-
-            if j is not None:
-                self.push(f"J{j:.3f}")
-
-            if k is not None:
-                self.push(f"K{k:.3f}")
-
+    @property
     @contextmanager
-    def arc_cw(self, i=None, j=None, k=None):
-        with self.arc(Motion.arc_cw, i, j, k):
+    def arc_cw(self):
+        with self.arc(Motion.arc_cw):
             yield
 
+    @property
     @contextmanager
-    def arc_ccw(self, i=None, j=None, k=None):
-        with self.arc(Motion.arc_ccw, i, j, k):
+    def arc_ccw(self):
+        with self.arc(Motion.arc_ccw):
             yield
 
     @property

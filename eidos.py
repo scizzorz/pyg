@@ -123,7 +123,7 @@ class P(Program):
     def outline(self):
         self.feed = self.cut
 
-        with self.arc_cw():
+        with self.arc_cw:
             self.x = tr_tan.x
             self.y = tr_tan.y
             self.i = top_center.x - tl_tan.x
@@ -133,7 +133,7 @@ class P(Program):
             self.x = rt_tan.x
             self.y = rt_tan.y
 
-        with self.arc_cw():
+        with self.arc_cw:
             self.x = rb_tan.x
             self.y = rb_tan.y
             self.i = right_center.x - rt_tan.x
@@ -143,7 +143,7 @@ class P(Program):
             self.x = br_tan.x
             self.y = br_tan.y
 
-        with self.arc_cw():
+        with self.arc_cw:
             self.x = bl_tan.x
             self.y = bl_tan.y
             self.i = bottom_center.x - br_tan.x
