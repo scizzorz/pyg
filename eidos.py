@@ -123,26 +123,35 @@ class P(Program):
     def outline(self):
         self.feed = self.cut
 
-        with self.arc_cw(i=top_center.x - tl_tan.x, j=top_center.y - tl_tan.y):
+        with self.arc_cw():
             self.x = tr_tan.x
             self.y = tr_tan.y
+            self.i = top_center.x - tl_tan.x
+            self.j = top_center.y - tl_tan.y
 
         with self.linear:
-            self.goto(x=rt_tan.x, y=rt_tan.y)
+            self.x = rt_tan.x
+            self.y = rt_tan.y
 
-        with self.arc_cw(i=right_center.x - rt_tan.x, j=right_center.y - rt_tan.y):
+        with self.arc_cw():
             self.x = rb_tan.x
             self.y = rb_tan.y
+            self.i = right_center.x - rt_tan.x
+            self.j = right_center.y - rt_tan.y
 
         with self.linear:
-            self.goto(x=br_tan.x, y=br_tan.y)
+            self.x = br_tan.x
+            self.y = br_tan.y
 
-        with self.arc_cw(i=bottom_center.x - br_tan.x, j=bottom_center.y - br_tan.y):
+        with self.arc_cw():
             self.x = bl_tan.x
             self.y = bl_tan.y
+            self.i = bottom_center.x - br_tan.x
+            self.j = bottom_center.y - br_tan.y
 
         with self.linear:
-            self.goto(x=tl_tan.x, y=tl_tan.y)
+            self.x = tl_tan.x
+            self.y = tl_tan.y
 
     def inner(self):
         # cut top line

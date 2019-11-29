@@ -5,12 +5,19 @@ from enum import Enum
 
 
 class Axis:
+    """Used for setting values. Really more of a Parameter..."""
+
     def __init__(self, program, axis):
         self.axis = axis
         self.program = program
 
     def push(self, val):
         self.program.push(f"{self.axis}{val:.3f}")
+
+
+class IncAxis(Axis):
+    """Used for setting values that also trigger relative movement when used
+    with += and -="""
 
     def __iadd__(self, val):
         if val is not None:
@@ -81,9 +88,14 @@ class Program:
         self._feed = None
 
         # tool coordinates
-        self._x = Axis(self, "X")
-        self._y = Axis(self, "Y")
-        self._z = Axis(self, "Z")
+        self._x = IncAxis(self, "X")
+        self._y = IncAxis(self, "Y")
+        self._z = IncAxis(self, "Z")
+
+        # arc center coordinates
+        self._i = Axis(self, "I")
+        self._j = Axis(self, "J")
+        self._k = Axis(self, "K")
 
         # initializes everything
         with self.rapid:
@@ -200,6 +212,33 @@ class Program:
         if val is not None:
             self.absolute
             self._z.push(val)
+
+    @property
+    def i(self):
+        return self._i
+
+    @i.setter
+    def i(self, val):
+        if val is not None:
+            self._i.push(val)
+
+    @property
+    def j(self):
+        return self._j
+
+    @j.setter
+    def j(self, val):
+        if val is not None:
+            self._j.push(val)
+
+    @property
+    def k(self):
+        return self._k
+
+    @k.setter
+    def k(self, val):
+        if val is not None:
+            self._k.push(val)
 
     @property
     def relative(self):
