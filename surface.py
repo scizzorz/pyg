@@ -32,16 +32,16 @@ class Surface(Program):
         skip = (self.tool_diam * self.overlap) * inset
 
         with self.linear:
-          self.y = self.min_y + skip
+            self.y = self.min_y + skip
 
         with self.linear:
-          self.x = self.min_x + skip
+            self.x = self.min_x + skip
 
         with self.linear:
-          self.y = self.max_y - skip
+            self.y = self.max_y - skip
 
         with self.linear:
-          self.x = self.max_y - skip - (self.tool_diam * self.overlap)
+            self.x = self.max_y - skip - (self.tool_diam * self.overlap)
 
     def go(self):
         # home to center
@@ -50,7 +50,7 @@ class Surface(Program):
 
         self.insert()
         for n in range(11):
-          self.surface(n)
+            self.surface(n)
         self.extract()
 
 
