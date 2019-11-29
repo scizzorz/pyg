@@ -103,7 +103,7 @@ sm_bottom_center = bottom + sm_bottom_inset
 sm_right_center = right + sm_right_inset
 
 
-class P(Program):
+class Eidos(Program):
     cut: float = 300
     plunge: float = 100
     safety: float = 10
@@ -157,38 +157,46 @@ class P(Program):
         # cut top line
         self.feed = self.cut
         with self.linear:
-            self.goto(x=sm_top_center.x, y=sm_top_center.y)
+            self.x = sm_top_center.x
+            self.y = sm_top_center.y
 
         # center
         self.feed = self.cut * 3
         with self.linear:
-            self.move(x=-sm_top_center.x, y=-sm_top_center.y)
+            self.x -= sm_top_center.x
+            self.y -= sm_top_center.y
 
         # cut right line
         self.feed = self.cut
         with self.linear:
-            self.goto(x=sm_right_center.x, y=sm_right_center.y)
+            self.x = sm_right_center.x
+            self.y = sm_right_center.y
 
         # center
         self.feed = self.cut * 3
         with self.linear:
-            self.move(x=-sm_right_center.x, y=-sm_right_center.y)
+            self.x -= sm_right_center.x
+            self.y -= sm_right_center.y
 
         # cut bottom line
         self.feed = self.cut
         with self.linear:
             self.feed = self.cut
-            self.goto(x=sm_bottom_center.x, y=sm_bottom_center.y)
+            self.x = sm_bottom_center.x
+            self.y = sm_bottom_center.y
 
         # center
         self.feed = self.cut * 3
         with self.linear:
-            self.move(x=-sm_bottom_center.x, y=-sm_bottom_center.y)
+            self.x -= sm_bottom_center.x
+            self.y -= sm_bottom_center.y
 
     def go(self):
         # home to center
         with self.rapid:
-            self.goto(x=0, y=0, z=self.safety)
+            self.x = 0
+            self.y = 0
+            self.z = self.safety
 
         # cut out inner
         x = 0
@@ -200,7 +208,8 @@ class P(Program):
 
         # home to outline start
         with self.rapid:
-            self.goto(x=tl_tan.x, y=tl_tan.y)
+            self.x = tl_tan.x
+            self.y = tl_tan.y
 
         # engage outline
         x = 0
@@ -212,10 +221,10 @@ class P(Program):
 
         # home to center
         with self.rapid:
-            self.goto(x=0, y=0)
+            self.x = 0
+            self.y = 0
 
 
-p = P()
+p = Eidos()
 p.go()
-for command in p.commands:
-    print(command)
+p.print()

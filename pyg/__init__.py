@@ -103,6 +103,10 @@ class Program:
             self.measurement = Measurement.metric
             self.plane = Plane.xy
 
+    def print(self):
+        for command in self.commands:
+            print(command)
+
     def push(self, cmd):
         self.buffer.append(cmd)
 

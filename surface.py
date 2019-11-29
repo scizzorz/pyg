@@ -56,5 +56,4 @@ class Surface(Program):
 
 p = Surface()
 p.go()
-for command in p.commands:
-    print(command)
+p.print()
