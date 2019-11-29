@@ -1,5 +1,5 @@
 import math
-from . import Program
+from pyg import Program
 from dataclasses import dataclass
 from math import sqrt
 
@@ -108,7 +108,7 @@ class P(Program):
     plunge: float = 100
     safety: float = 10
     depth_per_pass: float = 0.5
-    max_depth: float = 23.0
+    max_depth: float = 19.0
 
     def safe(self):
         self.feed = self.plunge
